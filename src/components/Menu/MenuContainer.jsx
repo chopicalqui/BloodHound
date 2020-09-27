@@ -232,6 +232,8 @@ class MenuContainer extends Component {
             'computers',
             'users',
             'domains',
+            'shares',
+            'fsitems'
         ];
         let count;
 
@@ -366,6 +368,8 @@ class MenuContainer extends Component {
                 domains: NewIngestion.buildDomainJsonNew,
                 ous: NewIngestion.buildOuJsonNew,
                 gpos: NewIngestion.buildGpoJsonNew,
+                shares: NewIngestion.buildShareJsonNew,
+                fsitems: NewIngestion.buildFsItemJsonNew
             };
         }
 

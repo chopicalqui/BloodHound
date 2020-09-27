@@ -235,6 +235,10 @@ export async function addConstraints() {
     await session.run('CREATE INDEX ON :Domain(objectid)').catch((_) => {});
     await session.run('CREATE INDEX ON :OU(name)').catch((_) => {});
     await session.run('CREATE INDEX ON :OU(objectid)').catch((_) => {});
+    await session.run('CREATE INDEX ON :Share(name)').catch((_) => {});
+    await session.run('CREATE INDEX ON :Share(objectid)').catch((_) => {});
+    await session.run('CREATE INDEX ON :FsItem(name)').catch((_) => {});
+    await session.run('CREATE INDEX ON :FsItem(objectid)').catch((_) => {});
     await session.run('CREATE INDEX ON :Base(name)').catch((_) => {});
     session.close();
 

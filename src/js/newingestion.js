@@ -522,6 +522,58 @@ export function buildDomainJsonNew(chunk) {
     return queries;
 }
 
+export function buildShareJsonNew(chunk) {
+    let queries = {};
+    queries.properties = {};
+    queries.properties.statement =
+        'UNWIND $props AS prop MERGE (n:Base {objectid: prop.source}) ON MATCH SET n:Share ON CREATE SET n:Share SET n += prop.map';
+    queries.properties.props = [];
+
+    for (let share of chunk) {
+        let properties = share.Properties;
+        let identifier = share.ObjectIdentifier;
+        let aces = share.Aces;
+
+        queries.properties.props.push({
+            source: identifier,
+            map: properties
+        });
+
+        processAceArrayNew(aces, identifier, 'Share', queries);
+
+        let format = ['Computer', 'Share', 'Hosts', '{isacl:false}'];
+        let props = { source: properties['computerid'], target: identifier };
+        insertNew(queries, format, props);
+    }
+    return queries;
+}
+
+export function buildFsItemJsonNew(chunk) {
+    let queries = {};
+    queries.properties = {};
+    queries.properties.statement =
+        'UNWIND $props AS prop MERGE (n:Base {objectid: prop.source}) ON MATCH SET n:FsItem ON CREATE SET n:FsItem SET n += prop.map';
+    queries.properties.props = [];
+
+    for (let fsItem of chunk) {
+        let properties = fsItem.Properties;
+        let identifier = fsItem.ObjectIdentifier;
+        let aces = fsItem.Aces;
+
+        queries.properties.props.push({
+            source: identifier,
+            map: properties
+        });
+
+        processAceArrayNew(aces, identifier, 'FsItem', queries);
+
+        let format = ['Share', 'FsItem', 'Contains', '{isacl:false}'];
+        let props = { source: properties['shareid'], target: identifier };
+        insertNew(queries, format, props);
+    }
+    return queries;
+}
+
 const baseInsertStatement =
     'UNWIND $props AS prop MERGE (n:Base {objectid: prop.source}) ON MATCH SET n:{0} ON CREATE SET n:{0} MERGE (m:Base {objectid: prop.target}) ON MATCH SET m:{1} ON CREATE SET m:{1} MERGE (n)-[r:{2} {3}]->(m)';
 
@@ -614,6 +666,11 @@ function processAceArrayNew(aces, objectid, objecttype, queries) {
 
         if (right === 'ReadGMSAPassword') {
             rights.push('ReadGMSAPassword');
+        }
+
+        if (objecttype === 'Share' || objecttype === 'FsItem')
+        {
+            rights.push(right);
         }
 
         return rights.map(right => {
